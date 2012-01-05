@@ -1,0 +1,15 @@
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteBase /
+
+	# .net/.org Redirect
+	RewriteCond %{HTTP_HOST} ^munroescore.(net|org)
+	RewriteRule ^(.*) http://munroescore.com/$1 [L,R=301]
+
+	# WWW Redirect
+	RewriteCond %{HTTP_HOST} ^www.munroescore.(net|org|com)
+	RewriteRule ^(.*) http://munroescore.com/$1 [R=301,L]
+
+</IfModule>
