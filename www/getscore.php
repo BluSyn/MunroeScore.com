@@ -10,6 +10,9 @@
 
 $start_time = microtime(TRUE);
 
+// Set user-agent string to something descriptive
+ini_set('user_agent', 'MunroeScoreBot/0.1; (+http://munroescore.com)');
+
 $cfg = array(
 	// Pages that count as a 'Final' page to end on
 	'endpages' => array(
