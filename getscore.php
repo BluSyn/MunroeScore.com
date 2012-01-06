@@ -138,10 +138,26 @@ function find_link($content, $num = 0) {
 	// Parse raw string for link
 	$para = str_get_html($para);
 
-	// Get first a:href attribute
-	$link = @$para->find('a',0)->href;
+	// Find all links in paragraph to count
+	$links = @$para->find('a');
 
-	// If no link is found, go to next paragraph
+	// If no links are found, go to next paragraph
+	if (!$links) return find_link($content, $num+1);
+
+	// Count number of links
+	$numlinks = count($links);
+
+	// Start going through each link until we find the proper "first"
+	$currlink = 0;
+	do {
+		// Get first a:href attribute
+		$link = @$para->find('a',$currlink)->href;
+		++$currlink;
+
+		// If link starts with #, go to next link
+	} while ($link && $link[0] === '#');
+
+	// If no proper link is found, go to next paragraph
 	if (!$link) return find_link($content, $num+1);
 	else return str_replace('/wiki/','',$link);
 }
