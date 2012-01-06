@@ -3,6 +3,8 @@
  * Get Munroe Score from wikipedia
  */
 
+$start_time = microtime(TRUE);
+
 $cfg = array(
 	// Pages that count as a 'Final' page to end on
 	'endpages' => array(
@@ -17,8 +19,6 @@ $cfg = array(
 );
 
 require 'lib/simple_html_dom.php';
-
-$start_time = microtime(TRUE);
 
 //$page = 'Government';
 $page = 'Thomas Jefferson';
