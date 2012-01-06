@@ -6,3 +6,10 @@
 	margin: 0;
 	padding: 0;
 }
+body {
+	font-family: "Trebuchet MS", Tahoma, Verdana, Arial;
+}
+p {
+	margin: 5px 0;
+	padding: 0 5px;
+}
