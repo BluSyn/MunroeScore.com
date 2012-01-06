@@ -139,18 +139,23 @@ function find_link($content, $num = 0) {
 	// Parse raw string for link
 	$para = str_get_html($para);
 
-	// Find all links in paragraph to count
+	// Find all links in paragraph to verify and count
 	$links = @$para->find('a');
 
 	// If no links are found, go to next paragraph
 	if (!$links) return find_link($content, $num+1);
 
-	// Count number of links
 	$numlinks = count($links);
 
 	// Start going through each link until we find the proper "first"
 	$currlink = 0;
 	do {
+		// If we go past the total number of links,
+		// then skip to next paragraph
+		if ($currlink >= $numlinks) {
+			return find_link($content, $num+1);
+		}
+
 		// Get first a:href attribute
 		$link = @$para->find('a',$currlink)->href;
 		++$currlink;
