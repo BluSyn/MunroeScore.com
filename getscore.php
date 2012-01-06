@@ -133,6 +133,7 @@ function find_link($content, $num = 0) {
 	// Remove all parantheses from content before searching for link
 	do {
 		$para = preg_replace('/\([^\)\(]+\)/i', '', $para);
+		$para = preg_replace('/\[[^\]\[]+\]/i', '', $para);
 	} while(strpos($para, '(') !== FALSE);
 
 	// Parse raw string for link
