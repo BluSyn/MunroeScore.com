@@ -98,9 +98,9 @@ function get_wiki($page, $score) {
 
 /*
  * This looks for the first link in a wikipedia article
- * that is no italics or inside parantheses
+ * that is not italic or inside parantheses
  *
- * $content is the text of main content area (#bodyContent .mw-content-ltr)
+ * $content is the object of main content area (#bodyContent .mw-content-ltr)
  * $num is the paragraph number to look at for next link (default 0)
  */
 function find_link($content, $num = 0) {
