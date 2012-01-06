@@ -149,6 +149,7 @@ function find_link($content, $num = 0) {
 
 	// Start going through each link until we find the proper "first"
 	$currlink = 0;
+	$badlink = FALSE;
 	do {
 		// If we go past the total number of links,
 		// then skip to next paragraph
@@ -158,14 +159,26 @@ function find_link($content, $num = 0) {
 
 		// Get first a:href attribute
 		$link = @$para->find('a',$currlink)->href;
+
+		// Skip to next paragraph if link not found
+		if (!$link) return find_link($content, $num+1);
+
+		// Strip /wiki/ from link so its easier to verify
+		$link = str_replace('/wiki/','',$link);
 		++$currlink;
 
-		// If link starts with #, go to next link
-	} while ($link && $link[0] === '#');
+		// Verify link before continuing
+		if (substr($link, 0, 1) === '#') $badlink = TRUE;
+		elseif (substr($link, 0, 2) === '//') $badlink = TRUE;
+		elseif (substr($link, 0, 5) === 'http:') $badlink = TRUE;
+		elseif (strpos($link, 'File:') !== FALSE) $badlink = TRUE;
+		elseif (strpos($link, 'Wikipedia:') !== FALSE) $badlink = TRUE;
+		else $badlink = FALSE;
 
-	// If no proper link is found, go to next paragraph
-	if (!$link) return find_link($content, $num+1);
-	else return str_replace('/wiki/','',$link);
+	} while ($badlink);
+
+	// Link has been found, pass it along
+	return $link;
 }
 
 $end_time = microtime(TRUE);
