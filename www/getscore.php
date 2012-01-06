@@ -17,7 +17,8 @@ $cfg = array(
 	),
 
 	// Base URL for wikipedia
-	'baseurl' => 'http://en.wikipedia.org/wiki/',
+	// For bandwidth and usability, mobile version is the best
+	'baseurl' => 'http://en.m.wikipedia.org/wiki/',
 
 	// Limit number of pages we search to throttle bandwidth
 	'limit' => 30,
