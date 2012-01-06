@@ -20,7 +20,7 @@ $cfg = array(
 
 require 'lib/simple_html_dom.php';
 
-//$page = 'Government';
+//$page = 'Positivism';
 $page = 'Thomas Jefferson';
 
 // Escape input
@@ -59,7 +59,7 @@ function get_wiki($page, $score) {
 	$next = find_link($contents);
 
 	// Unset dom/content vars to free up memory
-	//unset($dom, $contents);
+	$dom->clear();
 
 	// Print error if no link found
 	if ($next === FALSE) {
@@ -92,10 +92,21 @@ function get_wiki($page, $score) {
 function find_link($content, $num = 0) {
 
 	// At a certain point we give up looking for links
-	if ($num >= 5) return FALSE;
+	if ($num >= 20) return FALSE;
 
 	// Get specified paragraph from content
 	$para = $content->find('p',$num);
+
+	/*
+	 * Ensure this paragraph is a child of the main div
+	 * this prevents links that show up in the side tables
+	 *
+	 * NOTE: A better solution would be to remove tables from DOM,
+	 * but existing DOM library does not support this
+	 */
+	if ($para->parent()->class !== 'mw-content-ltr') {
+		return find_link($content, $num+1);
+	}
 
 	// Replace parathenses inside href tags with proper url char code
 	preg_match_all('/href="\/wiki\/[0-9A-Z_\(\)]+"/i', $para, $ma);
