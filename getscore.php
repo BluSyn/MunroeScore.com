@@ -34,7 +34,7 @@ require 'lib/simple_html_dom.php';
 // Take input from command line
 // if nothing is entered, default to "Mathematics"
 // since is has a small score
-$page = isset($argv[1]) ? $argv[1] : 'Mathematics';
+$page = isset($argv[1]) ? implode('_',array_slice($argv,0)) : 'Mathematics';
 
 // Escape input
 $page = str_replace(' ', '_', $page);
