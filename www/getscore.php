@@ -1,6 +1,11 @@
+#!/usr/bin/php
 <?php
 /*
  * Get Munroe Score from wikipedia
+ *
+ * Written by Steven Bower; 2012
+ * This program is available free of charge.
+ * I make no license claims, as I find that pointless.
  */
 
 $start_time = microtime(TRUE);
@@ -15,13 +20,17 @@ $cfg = array(
 	'baseurl' => 'http://en.wikipedia.org/wiki/',
 
 	// Limit number of pages we search to throttle bandwidth
-	'limit' => 20,
+	'limit' => 30,
 );
 
+// Include DOM library; incredibly simple
+// A more powerful DOM library may be needed later on
 require 'lib/simple_html_dom.php';
 
-//$page = 'Positivism';
-$page = 'Thomas Jefferson';
+// Take input from command line
+// if nothing is entered, default to "Mathematics"
+// since is has a small score
+$page = isset($argv[1]) ? $argv[1] : 'Mathematics';
 
 // Escape input
 $page = str_replace(' ', '_', $page);
@@ -36,7 +45,7 @@ $score = 1;
 $run = get_wiki($page, $score);
 
 /*
- * Gets wikipedia page and parses for link
+ * Gets wikipedia page and parses for links
  */
 function get_wiki($page, $score) {
 	global $cfg;
@@ -69,6 +78,7 @@ function get_wiki($page, $score) {
 
 	// If found link is the final link in the chain display success
 	if (array_search($next, $cfg['endpages']) !== FALSE) {
+		print 'Final link: '.$next."\n";
 		print "\n".'End point reached.'."\n";
 		print 'Munroe Score: '.$score."\n";
 		return;
@@ -109,6 +119,7 @@ function find_link($content, $num = 0) {
 	}
 
 	// Replace parathenses inside href tags with proper url char code
+	// to prevent their deletion when parans are removed
 	preg_match_all('/href="\/wiki\/[0-9A-Z_\(\)]+"/i', $para, $ma);
 	foreach ($ma[0] AS $match) {
 		$new = str_replace('(', '%28', str_replace(')', '%29', $match));
