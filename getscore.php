@@ -134,33 +134,55 @@ function find_link($content, $num = 0) {
 	do {
 		$para = preg_replace('/\([^\)\(]+\)/i', '', $para);
 		$para = preg_replace('/\[[^\]\[]+\]/i', '', $para);
-	} while(strpos($para, '(') !== FALSE);
+	} while(strpos($para, '(') !== FALSE || strpos($para, '[') !== FALSE);
 
 	// Parse raw string for link
 	$para = str_get_html($para);
 
-	// Find all links in paragraph to count
+	// Find all links in paragraph to verify and count
 	$links = @$para->find('a');
 
 	// If no links are found, go to next paragraph
 	if (!$links) return find_link($content, $num+1);
 
-	// Count number of links
 	$numlinks = count($links);
 
 	// Start going through each link until we find the proper "first"
 	$currlink = 0;
+	$badlink = FALSE;
 	do {
-		// Get first a:href attribute
-		$link = @$para->find('a',$currlink)->href;
+		// If we go past the total number of links,
+		// then skip to next paragraph
+		if ($currlink >= $numlinks) {
+			return find_link($content, $num+1);
+		}
+
+		// Find link #$currlink inside paragraph
+		$linkobj = @$para->find('a',$currlink);
+
+		// Skip to next paragraph if link not found
+		if (!$linkobj) return find_link($content, $num+1);
+
+		$link = $linkobj->href;
+
+		// Strip /wiki/ from link so its easier to verify
+		$link = str_replace('/wiki/','',$link);
 		++$currlink;
 
-		// If link starts with #, go to next link
-	} while ($link && $link[0] === '#');
+		// Make sure the link is not italic
+		if ($linkobj->parent()->tag === 'i') $badlink = TRUE;
+		// Verify link formats
+		elseif (substr($link, 0, 1) === '#') $badlink = TRUE;
+		elseif (substr($link, 0, 2) === '//') $badlink = TRUE;
+		elseif (substr($link, 0, 5) === 'http:') $badlink = TRUE;
+		elseif (strpos($link, 'File:') !== FALSE) $badlink = TRUE;
+		elseif (strpos($link, 'Wikipedia:') !== FALSE) $badlink = TRUE;
+		else $badlink = FALSE;
 
-	// If no proper link is found, go to next paragraph
-	if (!$link) return find_link($content, $num+1);
-	else return str_replace('/wiki/','',$link);
+	} while ($badlink);
+
+	// Link has been found, pass it along
+	return $link;
 }
 
 $end_time = microtime(TRUE);
