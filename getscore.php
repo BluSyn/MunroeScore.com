@@ -157,18 +157,22 @@ function find_link($content, $num = 0) {
 			return find_link($content, $num+1);
 		}
 
-		// Get first a:href attribute
-		$link = @$para->find('a',$currlink)->href;
+		// Find link #$currlink inside paragraph
+		$linkobj = @$para->find('a',$currlink);
 
 		// Skip to next paragraph if link not found
-		if (!$link) return find_link($content, $num+1);
+		if (!$linkobj) return find_link($content, $num+1);
+
+		$link = $linkobj->href;
 
 		// Strip /wiki/ from link so its easier to verify
 		$link = str_replace('/wiki/','',$link);
 		++$currlink;
 
-		// Verify link before continuing
-		if (substr($link, 0, 1) === '#') $badlink = TRUE;
+		// Make sure the link is not italic
+		if ($linkobj->parent()->tag === 'i') $badlink = TRUE;
+		// Verify link formats
+		elseif (substr($link, 0, 1) === '#') $badlink = TRUE;
 		elseif (substr($link, 0, 2) === '//') $badlink = TRUE;
 		elseif (substr($link, 0, 5) === 'http:') $badlink = TRUE;
 		elseif (strpos($link, 'File:') !== FALSE) $badlink = TRUE;
