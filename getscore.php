@@ -134,7 +134,7 @@ function find_link($content, $num = 0) {
 	do {
 		$para = preg_replace('/\([^\)\(]+\)/i', '', $para);
 		$para = preg_replace('/\[[^\]\[]+\]/i', '', $para);
-	} while(strpos($para, '(') !== FALSE);
+	} while(strpos($para, '(') !== FALSE || strpos($para, '[') !== FALSE);
 
 	// Parse raw string for link
 	$para = str_get_html($para);
