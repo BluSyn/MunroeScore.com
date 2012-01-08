@@ -8,7 +8,8 @@ $(function() {
 });
 
 // Tracks load times
-var _starttime = (new Date()).getMilliseconds();
+var _parsetime = 0;
+var _searchtime = 0;
 
 // Debug function, to be removed later
 var debug = function(data) {
@@ -19,28 +20,31 @@ var APIURL = 'http://en.wikipedia.org/w/api.php?callback=?';
 var startSearch = function() {
 	var page = $('#search').val();
 
-	loadPage(page.replace(' ','_'));
+	debug('Starting Search: '+page);
+
+	_searchtime = (new Date()).getMilliseconds();
+	loadPage(page.replace(' ','_'), 1);
 
 	// Prevent form from submitting
 	return false;
 };
 
 // Sends JSON request to specified page
-var loadPage = function(page) {
+var loadPage = function(page, score) {
 	$.getJSON(APIURL,{
-		page: page,
+		page: decodeURIComponent(page),
 		action: 'parse',
 		format: 'json',
 		prop: 'text',
 		uselang: 'en'
-	}, parseWiki);
+	}, function (data) { return parseWiki(data, score); });
 };
 
 // Ensures we need to continue loading the next page
-var goNextPage = function(page) {
+var goNextPage = function(page, score) {
 	// Send proccessing time to debug
 	var _endtime = (new Date()).getMilliseconds();
-	debug('Process Time: '+(_endtime-_starttime)+'ms');
+	debug('Process Time: '+(_endtime-_parsetime)+'ms');
 
 	// Make sure a proper value was received
 	if (page == '' || page == null) {
@@ -50,31 +54,40 @@ var goNextPage = function(page) {
 
 	// Check if this page matches our 'final' page settings
 	if (page === 'Philosophy') {
-		finalPageFound(page);
+		finalPageFound(page, score);
 		return;
 	}
 
-	console.log('Next Page: '+page);
+	console.log('Page #'+score+': '+page);
 
 	// Continue loading the next page
-	return loadPage(page);
+	return loadPage(page, score+1);
 };
 
 var pageNotFound = function(page) {
 	debug(page);
 };
 
-var finalPageFound = function(page) {
+var finalPageFound = function(page, score) {
 	debug(page);
-	alert('Success! Philosophy found');
+	debug('Success! Philosophy found');
+	debug('Munroe Score: '+score);
+
+	var _endtime = (new Date()).getMilliseconds();
+	debug('Time To Find: '+(_endtime-_searchtime)+'ms');
 };
 
 // Parse out the important information from wiki JSON response
-var parseWiki = function(data) {
+var parseWiki = function(data, score) {
 	// Track parse time
-	_starttime = (new Date()).getMilliseconds();
+	_parsetime = (new Date()).getMilliseconds();
 
-	var content = data.parse.text['*'];
+	if (!data || !data.parse || !data.parse.text) {
+		debug('Error: Could not load page');
+		return;
+	}
+
+	var content = data.parse.text['*'] || '';
 
 	// Remove all src="" values from content
 	// this prevents external resources (images) from loading
@@ -113,7 +126,7 @@ var parseWiki = function(data) {
 	html.remove('table');
 
 	// Find the link
-	return goNextPage(findLink(html));
+	return goNextPage(findLink(html), score);
 };
 
 
