@@ -7,6 +7,9 @@ $(function() {
 	$('#getForm').submit(startSearch);
 });
 
+// Tracks load times
+var _starttime = (new Date()).getMilliseconds();
+
 // Debug function, to be removed later
 var debug = function(data) {
 	console.log(data);
@@ -16,7 +19,7 @@ var APIURL = 'http://en.wikipedia.org/w/api.php?callback=?';
 var startSearch = function() {
 	var page = $('#search').val();
 
-	loadPage(page);
+	loadPage(page.replace(' ','_'));
 
 	// Prevent form from submitting
 	return false;
@@ -35,6 +38,10 @@ var loadPage = function(page) {
 
 // Ensures we need to continue loading the next page
 var goNextPage = function(page) {
+	// Send proccessing time to debug
+	var _endtime = (new Date()).getMilliseconds();
+	debug('Process Time: '+(_endtime-_starttime)+'ms');
+
 	// Make sure a proper value was received
 	if (page == '' || page == null) {
 		pageNotFound(page);
@@ -50,7 +57,7 @@ var goNextPage = function(page) {
 	console.log('Next Page: '+page);
 
 	// Continue loading the next page
-	//return loadPage(page);
+	return loadPage(page);
 };
 
 var pageNotFound = function(page) {
@@ -64,6 +71,9 @@ var finalPageFound = function(page) {
 
 // Parse out the important information from wiki JSON response
 var parseWiki = function(data) {
+	// Track parse time
+	_starttime = (new Date()).getMilliseconds();
+
 	var content = data.parse.text['*'];
 
 	// Remove all src="" values from content
@@ -76,17 +86,17 @@ var parseWiki = function(data) {
 	// are removed from the content in the next step
 	var ma = content.match(/href="\/wiki\/[0-9A-Z_%\-\(\)]+"/ig);
 	for (var match in ma) {
-		var esc = match.replace('(', '%28').replace(')','%29');
-		content = content.replace(match, esc);
+		var esc = ma[match].replace('(', '%28').replace(')','%29');
+		content = content.replace(ma[match], esc);
 	}
 
 	// Remove all parantheses and bracket sections
 	// from content to stay within the confines of Munroe's Law
 	// Do it as many times as needed to deal with "nested" groups
 	do {
-		content = content.replace(/\([^\)\(]+\)/g, '');
-		content = content.replace(/\[[^\]\[]+\]/g, '');
-	} while(content.indexOf('(') !== -1 || content.indexOf('[') !== -1);
+		content = content.replace(/\([^\)\(]+\)/, '');
+		//content = content.replace(/\[[^\]\[]+\]/g, '');
+	} while(content.indexOf(')') !== -1);
 
 	// Parse content in jQuery
 	var html = $('<div id="parent">'+content+'</div>');
